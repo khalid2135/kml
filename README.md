@@ -347,7 +347,279 @@ for i in range(0, length_of_dataset):
     
     
     
-    ------------Genetic--------------
+    ------------k mean 2--------------
+    
+    import random
+import math
+
+NUM_CLUSTERS = 3
+TOTAL_DATA = 8
+LOWEST_SAMPLE_POINT = 6
+HIGHEST_SAMPLE_POINT = 3
+MIDDLE_SAMPLE_POINT = 5
+BIG_NUMBER = math.pow(10, 10)
+
+SAMPLES = [[2, 10], [2, 5], [8, 4], [5, 8], [7, 5], [6, 4], [1, 2], [4, 9]]
+
+data = []
+centroids = []
+
+class DataPoint:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    
+    def set_x(self, x):
+        self.x = x
+    
+    def get_x(self):
+        return self.x
+    
+    def set_y(self, y):
+        self.y = y
+    
+    def get_y(self):
+        return self.y
+    
+    def set_cluster(self, clusterNumber):
+        self.clusterNumber = clusterNumber
+    
+    def get_cluster(self):
+        return self.clusterNumber
+
+class Centroid:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def set_x(self, x):
+        self.x = x
+    
+    def get_x(self):
+        return self.x
+    
+    def set_y(self, y):
+        self.y = y
+    
+    def get_y(self):
+        return self.y
+
+def initialize_centroids():
+    centroids.append(Centroid(SAMPLES[LOWEST_SAMPLE_POINT][0], SAMPLES[LOWEST_SAMPLE_POINT][1]))
+    centroids.append(Centroid(SAMPLES[HIGHEST_SAMPLE_POINT][0], SAMPLES[HIGHEST_SAMPLE_POINT][1]))
+    centroids.append(Centroid(SAMPLES[MIDDLE_SAMPLE_POINT][0], SAMPLES[MIDDLE_SAMPLE_POINT][1]))
+    
+    print("Centroids initialized at:")
+    print("(", centroids[0].get_x(), ", ", centroids[0].get_y(), ")")
+    print("(", centroids[1].get_x(), ", ", centroids[1].get_y(), ")")
+    print("(", centroids[2].get_x(), ", ", centroids[2].get_y(), ")")
+    print()
+    return
+
+def initialize_datapoints():
+    for i in range(TOTAL_DATA):
+        newPoint = DataPoint(SAMPLES[i][0], SAMPLES[i][1])
+        
+        if(i == LOWEST_SAMPLE_POINT):
+            newPoint.set_cluster(0)
+        elif(i == HIGHEST_SAMPLE_POINT):
+            newPoint.set_cluster(1)
+        else:
+            newPoint.set_cluster(2)
+            
+        data.append(newPoint)
+    
+    return
+
+def get_distance(dataPointX, dataPointY, centroidX, centroidY):
+    # Calculate Euclidean distance.
+    return math.sqrt(math.pow((centroidY - dataPointY), 2) + math.pow((centroidX - dataPointX), 2))
+
+def recalculate_centroids():
+    totalX = 0
+    totalY = 0
+    totalZ = 0
+    totalInCluster = 0
+    
+    for j in range(NUM_CLUSTERS):
+        for k in range(len(data)):
+            if(data[k].get_cluster() == j):
+                totalX += data[k].get_x()
+                totalY += data[k].get_y()
+                totalInCluster += 1
+        
+        if(totalInCluster > 0):
+            centroids[j].set_x(totalX / totalInCluster)
+            centroids[j].set_y(totalY / totalInCluster)
+    
+    return
+
+def update_clusters():
+    isStillMoving = 0
+    
+    for i in range(TOTAL_DATA):
+        bestMinimum = BIG_NUMBER
+        currentCluster = 1
+        
+        for j in range(NUM_CLUSTERS):
+            distance = get_distance(data[i].get_x(), data[i].get_y(), centroids[j].get_x(), centroids[j].get_y())
+            if(distance < bestMinimum):
+                bestMinimum = distance
+                currentCluster = j
+        
+        data[i].set_cluster(currentCluster)
+        
+        if(data[i].get_cluster() is None or data[i].get_cluster() != currentCluster):
+            data[i].set_cluster(currentCluster)
+            isStillMoving = 1
+    
+    return isStillMoving
+
+def perform_kmeans():
+    isStillMoving = 1
+    
+    initialize_centroids()
+    
+    initialize_datapoints()
+    
+    while(isStillMoving):
+        recalculate_centroids()
+        isStillMoving = update_clusters()
+    
+    return
+
+def print_results():
+    for i in range(NUM_CLUSTERS):
+        print("Cluster ", i, " includes:")
+        for j in range(TOTAL_DATA):
+            if(data[j].get_cluster() == i):
+                print("(", data[j].get_x(), ", ", data[j].get_y(), ")")
+        print()
+    
+    return
+
+perform_kmeans()
+print_results()
+
+
+
+
+
+
+
+----------------Genetic------------
+
+import random
+def pick_rand(num):
+    
+    list2=['0','0','0','0','0']
+    list= bin(num).replace("0b", "")
+    
+    x=4
+    w=len(list)-1
+    for i in range(len(list)):
+        list2[i]=list[i]
+        w-=1
+        x-=1
+    return list2
+
+def fitness_of_num(num):
+    w=round((pow(-num,2)/10))
+    w=w*-1
+    w=w+3*num
+    return w
+
+def cross_over(list):
+    w=random.randint(1,4)
+    x=random.randint(1,4)
+    
+    if w>x:
+        temp=w
+        w=x
+        x=temp
+    for i in range(0,len(list),2):
+        for j in range(w,x):
+            temp=list[i][j]
+            list[i][j]=list[i+1][j]
+            list[i+1][j]=temp
+        
+            
+    return list
+def convert(list):
+    w=str(list)
+    x=''
+    for i in w:
+        if i=='0'or i=='1':
+            x+=i
+    return x
+
+def binaryToDecimal(binary): 
+
+    binary1 = binary 
+    decimal, i, n = 0, 0, 0
+    while(binary != 0): 
+        dec = binary % 10
+        decimal = decimal + dec * pow(2, i) 
+        binary = binary//10
+        i += 1
+    return decimal
+def check_fitness(fitness):
+    for i in range(len(fitness)):
+        if fitness[i]>=23:
+            return i
+    return -1
+def mutate(list):
+    w=random.randint(0,4)
+    x=random.randint(0,4)
+    for i in range(len(list)):
+        temp=list[i][w]
+        list[i][w]=list[i][x]
+        list[i][x]=temp
+    return list
+def askfitness(number):
+    fitness=[]
+    for i in range(len(number)):
+        fitness.append(fitness_of_num(number[i]))
+    return fitness
+    
+def convertonumbers(list):
+    number=[]
+    for i in range(len(list)):
+        w=convert(list[i])
+        number.append(binaryToDecimal(int(w)))
+
+    return number
+    
+    
+def main_function():
+    list=[]
+    number=[]
+    fitness=[]
+    
+    for x in range(10):
+        num=random.randint(0,31)
+        number.append(num)
+        list.append(pick_rand(num))
+        fitness.append(fitness_of_num(num))
+    
+    w=check_fitness(fitness)   
+    if w!=-1:
+        print(list[w],"   ",fitness[w],"   ",number[w])
+    else:
+        num=1
+        while True:
+            list=cross_over(list)
+            number=convertonumbers(list)
+            fitness=askfitness(number)
+            w=check_fitness(fitness)
+            if w!=-1:
+                print(list[w], "The fitness is", fitness[w], "and the number is", number[w])
+                break
+            if num%3==0:
+                list=mutate(list)
+            num+=1
+
+main_function()
     
     
     
